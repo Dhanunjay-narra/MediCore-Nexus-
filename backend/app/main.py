@@ -1,13 +1,15 @@
 """
 MediCore Nexus - Integrated Pharmacy, Hospital & Patient Care Management Platform
-Main FastAPI Application Entrypoint
+Main FastAPI Application Entrypoint with Embedded SPA Frontend Serving
 """
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from datetime import datetime, timezone
 import time
+import os
 import logging
 
 from backend.app.config import settings
@@ -49,8 +51,8 @@ app = FastAPI(
     title="MediCore Nexus API",
     description="Enterprise Integrated Healthcare & Pharmacy Management Platform API",
     version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
 )
 
 # Cross-Origin Resource Sharing (CORS) Middleware
@@ -134,11 +136,27 @@ async def get_system_metrics():
     }
 
 
-@app.get("/", tags=["Root"])
-async def root():
-    return {
-        "message": "Welcome to MediCore Nexus API Gateway",
-        "docs_url": "/docs",
-        "health_url": f"{api_prefix}/health",
-        "version": settings.APP_VERSION,
-    }
+# Static Frontend Assets Mount
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DIST_DIR = os.path.join(BASE_DIR, "dist")
+ASSETS_DIR = os.path.join(DIST_DIR, "assets")
+
+if os.path.exists(ASSETS_DIR):
+    app.mount("/assets", StaticFiles(directory=ASSETS_DIR), name="assets")
+
+
+@app.get("/{full_path:path}")
+async def serve_spa_frontend(full_path: str):
+    """Serve the compiled React Single Page App for all non-API web routes."""
+    # Don't intercept API calls
+    if full_path.startswith("api/") or full_path.startswith("api"):
+        return JSONResponse(status_code=404, content={"detail": "API route not found"})
+
+    index_html = os.path.join(DIST_DIR, "index.html")
+    if os.path.exists(index_html):
+        return FileResponse(index_html)
+
+    return JSONResponse(
+        status_code=200,
+        content={"message": "MediCore Nexus API Gateway Active. Build frontend with 'npm run build' to view UI."},
+    )
