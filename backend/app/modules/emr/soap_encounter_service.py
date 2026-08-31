@@ -1,0 +1,3 @@
+"""EMR SOAP Encounter Service Configuration"""
+MANDATORY_VITALS_RECORDING = True
+ICD10_PRIMARY_DIAGNOSIS_REQUIRED = True
