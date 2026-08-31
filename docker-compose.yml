@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: medicore-nexus-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - DEBUG=false
+      - DATABASE_URL=postgresql+asyncpg://medicore_user:medicore_secure_password@postgres:5432/medicore_nexus
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=medicore_nexus_production_secret_key_change_in_real_env_2026
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - medicore_uploads:/app/uploads
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend-builder
+    container_name: medicore-nexus-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    command: ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173"]
+    depends_on:
+      - backend
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: medicore-nexus-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: medicore_user
+      POSTGRES_PASSWORD: medicore_secure_password
+      POSTGRES_DB: medicore_nexus
+    ports:
+      - "5432:5432"
+    volumes:
+      - medicore_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U medicore_user -d medicore_nexus"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: medicore-nexus-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - medicore_redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  medicore_pgdata:
+  medicore_redisdata:
+  medicore_uploads:

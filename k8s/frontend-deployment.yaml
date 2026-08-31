@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: medicore-frontend
+  namespace: medicore-nexus
+  labels:
+    app: medicore-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: medicore-frontend
+  template:
+    metadata:
+      labels:
+        app: medicore-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: medicore-nexus-frontend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: medicore-frontend-svc
+  namespace: medicore-nexus
+spec:
+  selector:
+    app: medicore-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+  type: ClusterIP
