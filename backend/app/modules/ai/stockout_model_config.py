@@ -1,0 +1,3 @@
+"""AI Predictive Stockout Model Config"""
+CONFIDENCE_THRESHOLD = 0.85
+SAFETY_STOCK_BUFFER_DAYS = 14
