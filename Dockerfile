@@ -29,8 +29,8 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY backend ./backend
 COPY tests ./tests
+COPY example.env ./.env
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
-COPY .env.example ./.env
 
 EXPOSE 8000
 
