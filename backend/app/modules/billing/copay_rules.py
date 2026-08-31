@@ -1,0 +1,3 @@
+"""Billing and Co-Pay Rules Engine"""
+DEFAULT_OUTPATIENT_COPAY_USD = 25.0
+AUTO_SUBMIT_PRIMARY_INSURANCE = True
