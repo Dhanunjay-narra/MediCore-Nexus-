@@ -1,0 +1,17 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'medicore-backend'
+    metrics_path: '/api/v1/metrics'
+    static_configs:
+      - targets: ['backend:8000']
+
+  - job_name: 'medicore-redis'
+    static_configs:
+      - targets: ['redis:6379']
+
+  - job_name: 'medicore-postgres'
+    static_configs:
+      - targets: ['postgres:5432']
