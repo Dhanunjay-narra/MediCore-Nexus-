@@ -1,0 +1,3 @@
+"""Smart FEFO Batch Allocation Policy"""
+FEFO_EXPIRY_THRESHOLD_DAYS = 90
+AUTO_BATCH_SPLIT_ALLOWED = True
